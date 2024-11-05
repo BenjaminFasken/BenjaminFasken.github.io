@@ -701,8 +701,8 @@
                 const trainId = extractTrainIdPart(stboard[i].JourneyDetailRef.ref);
                 const shapeurl = "https://webapp.rejseplanen.dk/bin/query.exe/mny?look_trainid=" + trainId + "&tpl=chain2json3&performLocating=16&format_xy_n&";
 
-                const line_path = localdirs ? `utils/traffic_data/${stopID}/lines/${i}.json` : stboard[i].JourneyDetailRef.ref;
-                const shape_path = localdirs ? `utils/traffic_data/${stopID}/shapes/${i}.json` : shapeurl;
+                const line_path = localdirs ? `utils/traffic_data/${stopID}/lines/${i}.json` : stboard[i].JourneyDetailRef.ref.replace('http:', 'https:');
+                const shape_path = localdirs ? `utils/traffic_data/${stopID}/shapes/${i}.json` : shapeurl.replace('http:', 'https:');
                 routePromises.push(
                     Promise.all([
                         loadJSON(line_path),
