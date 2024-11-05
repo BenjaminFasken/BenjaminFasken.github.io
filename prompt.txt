@@ -1,0 +1,706 @@
+this is the previous way the data looked:
+
+json = {
+    "headTexts": [
+        "",
+        "",
+        "To",
+        "Pt.",
+        "Departures",
+        "Current"
+    ],
+    "stationName": "Frederikshavn St.",
+    "stationEvaId": "8600001",
+    "boardType": "dep",
+    "imgPath": "/hafas-res/img/",
+    "iconProductsSubPath": "",
+    "rtInfo": true,
+    "journey": [
+        {
+            "lfn": "1",
+            "id": "34821860",
+            "ti": "11:55",
+            "da": "30.07.24",
+            "pr": "Bybus 3",
+            "st": "Møllehuset via Gudekvarteret",
+            "tr": "B",
+            "pclass": "32",
+            "rt": false,
+            "tinfo": "https://webapp.rejseplanen.dk/bin/traininfo.exe/mn/399765/168076/339348/36419/86?time=11:55&date=30.07.24&station_evaId=813000102&station_type=dep&pageViewMode=PRINT",
+            "tinfoline": "https://webapp.rejseplanen.dk/bin/query.exe/mny?look_trainid=399765/168076/339348/36419/86&tpl=chain2json&performLocating=16&",
+            "trainid": "399765/168076/339348/36419/86"
+        }
+    ],
+    "maxJ": 20
+}
+
+json_shapes[idx] = [[[10540454,57441412],[10540454,57441412]],[[0,"Frederikshavn St."],[62,"Kvissel St."]]]
+
+trainrt[idx] = {
+"JourneyDetail":{
+  "noNamespaceSchemaLocation":"http://webapp.rejseplanen.dk/xml/rest/hafasRestJourneyDetail.xsd",
+  "Stop":[{
+    "name":"Frederikshavn St.",
+    "x":"10539996",
+    "y":"57441233",
+    "routeIdx":"0",
+    "depTime":"12:42",
+    "$":""
+    },{
+    "name":"Kvissel St.",
+    "x":"10412574",
+    "y":"57471994",
+    "routeIdx":"1",
+    "arrTime":"12:49",
+    "depTime":"12:49",
+    "$":""
+    },{
+    "name":"Hjørring St.",
+    "x":"9985389",
+    "y":"57456487",
+    "routeIdx":"5",
+    "arrTime":"13:17",
+    "$":""
+    }],
+  "JourneyName":{
+    "name":"Re 75",
+    "routeIdxFrom":"0",
+    "routeIdxTo":"5"
+    },
+  "JourneyType":{
+    "type":"REG",
+    "routeIdxFrom":"0",
+    "routeIdxTo":"5"
+    },
+  "JourneyLine":{
+    "line":"75",
+    "routeIdxFrom":"0",
+    "routeIdxTo":"5"
+    }
+  }
+}
+
+this is the way the new data looks:
+
+json = {
+    "DepartureBoard": {
+        "noNamespaceSchemaLocation": "http://webapp.rejseplanen.dk/xml/rest/hafasRestDepartureBoard.xsd",
+        "Departure": [
+            {
+                "name": "Bybus S1",
+                "type": "BUS",
+                "stop": "Aalborg St. (Omr\u00e5de A / John F. Kennedys Plads)",
+                "time": "13:14",
+                "date": "30.07.24",
+                "id": "851002701",
+                "line": "S1",
+                "messages": "0",
+                "track": "A6",
+                "rtTime": "13:28",
+                "rtDate": "30.07.24",
+                "finalStop": "M\u00f8lholmsvej v/ L\u00f8vstikkevej",
+                "direction": "M\u00f8lholm",
+                "JourneyDetailRef": {
+                    "ref": "http://webapp.rejseplanen.dk/bin//rest.exe/journeyDetail?ref=865284%2F323156%2F171882%2F202491%2F86%3Fdate%3D30.07.24%26station_evaId%3D851002701%26%26format%3Djson"
+                }
+            }
+        ]
+    }
+}
+
+json_shapes[idx] = [[[10540454,57441412],[10540454,57441412]],[[0,"Frederikshavn St."],[62,"Kvissel St."]]]
+
+trainrt[idx] = {
+    "JourneyDetail": {
+        "noNamespaceSchemaLocation": "http://webapp.rejseplanen.dk/xml/rest/hafasRestJourneyDetail.xsd",
+        "Stop": [
+            {
+                "name": "V\u00e6ddel\u00f8bsbanen (Skydebanevej / Aalborg)",
+                "x": "9882660",
+                "y": "57054678",
+                "routeIdx": "0",
+                "depTime": "13:09",
+                "depDate": "30.07.24",
+                "rtDepDate": "30.07.24",
+                "$": ""
+            },
+            {
+                "name": "Vestre Fjordvej (Kastetvej / Aalborg)",
+                "x": "9893411",
+                "y": "57055622",
+                "routeIdx": "1",
+                "arrTime": "13:11",
+                "arrDate": "30.07.24",
+                "rtArrDate": "30.07.24",
+                "depTime": "13:11",
+                "depDate": "30.07.24",
+                "rtDepDate": "30.07.24",
+                "$": ""
+            },
+            {
+                "name": "AAU Busterminal (Sigrid Undsetsvej / Aalborg)",
+                "x": "9990944",
+                "y": "57016375",
+                "routeIdx": "19",
+                "arrTime": "13:41",
+                "arrDate": "30.07.24",
+                "rtArrDate": "30.07.24",
+                "rtArrTime": "13:43",
+                "$": ""
+            }
+        ],
+        "JourneyName": {
+            "name": "Bybus 2",
+            "routeIdxFrom": "0",
+            "routeIdxTo": "19"
+        },
+        "JourneyType": {
+            "type": "BUS",
+            "routeIdxFrom": "0",
+            "routeIdxTo": "19"
+        },
+        "JourneyLine": {
+            "line": "2",
+            "routeIdxFrom": "0",
+            "routeIdxTo": "19"
+        }
+        
+    }
+}
+
+i need to change the old code to the new code with these new data formats in mind:
+
+
+//the cancelled one is on 95
+
+
+let stboardLoaded = false;
+let busclassesLoaded = false;
+let shapesloaded = false;
+let trainrtLoaded = false;
+
+// const url = 'https://webapp.rejseplanen.dk/bin/stboard.exe/mn?L=vs_stblivemap&input='+stopId+'&boardType=dep&maxJourneys=20&start=yes&requestType=0';
+//https://webapp.rejseplanen.dk/bin/stboard.exe/mn?L=vs_stblivemap&input=851008602&boardType=dep&maxJourneys=20&start=yes&requestType=0
+
+console.log(txt_stboard);
+trainIds = [];
+let stationName = '';
+let json = {};
+
+function toDanish(text) {
+  return text
+    .replace(/&#248;/g, 'ø')
+    .replace(/&#230;/g, 'æ')
+    .replace(/&#229;/g, 'å')
+    .replace(/&#198;/g, 'Æ')
+    .replace(/&#216;/g, 'Ø')
+    .replace(/&#197;/g, 'Å');
+}
+
+fetch(txt_stboard).then(response => response.text()).then(text => {
+  text = text.substring(text.indexOf('{')).replace("[ ,", "[");
+  text = toDanish(text);
+  json = JSON.parse(text);
+  stationName = json.stationName;
+  trainIds = new Array(json.journey.length);
+  console.log(stationName);  
+  console.log(json);
+
+  const element = document.getElementById("header_title");
+  element.innerHTML = stationName;
+
+  const barContainer = document.querySelector('.bar-container');
+
+  for (let i = 0; i < json.journey.length; i++) {
+    const newBar = barContainer.appendChild(document.createElement('div'));
+    const icon = newBar.appendChild(document.createElement('div'));
+    const busName = newBar.appendChild(document.createElement('div'));
+    const rightbar = newBar.appendChild(document.createElement('div'));
+    const platform = rightbar.appendChild(document.createElement('div'));
+    const busDepartureDiv = rightbar.appendChild(document.createElement('div'));
+    const departureTime = busDepartureDiv.appendChild(document.createElement('div'));
+    const departureDelay = busDepartureDiv.appendChild(document.createElement('div'));
+  
+    newBar.classList.add('bar');
+    icon.classList.add('busRouteNum');
+    busName.classList.add('busRouteDest');
+    rightbar.classList.add('rightboard');
+    platform.classList.add('platformDiv');
+    busDepartureDiv.classList.add('departureDiv');
+    departureTime.classList.add('depTime');
+    departureDelay.classList.add('originDelayTime');
+  
+
+    busName.textContent = json.journey[i].st; //show dep time and delay if there is a delay
+    if (json.journey[i].rt.dlt != undefined) {  
+      departureTime.textContent = json.journey[i].rt.dlt;
+      departureDelay.textContent = json.journey[i].ti
+      departureDelay.style.display = 'block';
+    }else{
+      departureTime.textContent = json.journey[i].ti;
+    }
+
+    if (json.journey[i].tr != undefined) {
+      platform.textContent = json.journey[i].tr;
+    }
+
+    // if (json.journey[i].rt.status == 'Aflyst') {
+    //   busName.style.textDecoration = 'line-through';
+    //   busName.style.color = 'red';
+    //   departureTime.style.textDecoration = 'line-through';
+    //   departureTime.style.color = 'red';
+    //   departureDelay.style.textDecoration = 'line-through';
+    //   departureDelay.style.color = 'red';
+    // }
+
+    // const out = json.journey[i].pr.lastIndexOf(' '); //get the bus number from the pr string
+    // busnum = json.journey[i].pr.substring(out+1);
+    // if (json.journey[i].pr.includes('RE')) {
+    //   busnum = 'RE';
+    // } else if (json.journey[i].pr.includes('IC')) {
+    //   busnum = 'IC';
+    // } else if (json.journey[i].pr.includes('ICL')) {
+    //   busnum = 'ICL';
+    // }
+    
+
+    icon.textContent = busnum;
+    icon.classList.add('bustype_default'); //add the background color for the bus type
+
+    if (i % 2 == 0) {
+      newBar.style.backgroundColor = '#ffffff';
+    }
+    newBar.addEventListener('click', () => {
+      window.location.href = 'utils/route-testing/route-test.html';
+    });  
+    trainIds[i] = json.journey[i].id;
+  }
+  stboardLoaded = true;
+});
+
+var busclassList = {};
+fetch(busclasses).then(response => response.json()).then(data => {
+  busclassList = data;
+  busclassesLoaded = true;
+  console.log('busclasses loaded');
+});
+
+json_shapes = new Array(trainIds.length);
+
+function loadShapes(){
+  // for (let i = 0; i < trainIds.length; i++) {
+  for (let i = 0; i < trainIds.length; i++) {
+    // fetch("https://webapp.rejseplanen.dk/bin/query.exe/mny?look_trainid="+trainIds[i]+"&tpl=chain2json3&performLocating=16&format_xy_n&")
+    fetch(json_shape + i +'.json')
+    .then(response => response.json()).then(data => {
+      data[0] = data[0].map(v => ([ v[0] / div, v[1] / div]));
+      json_shapes[i] = data;
+      const route_shape =  {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": data[0],
+          "type": "LineString"
+        }
+      };
+
+      if (i == trainIds.length-1) {
+        console.log('shapes loaded');
+        shapesloaded = true;
+      }
+    });
+  }
+}
+
+trainrt = new Array(trainIds.length);
+
+function loadRT(){
+  //load all realtime info
+  for (let i = 0; i < trainIds.length; i++) {
+    // fetch('https://webapp.rejseplanen.dk/bin/rest.exe/journeyDetail?ref='+trainIds[i]+'&station_evaId='+stationId+'&format=json&')
+    fetch(json_rtLine + i +'.json')
+    .then(response => response.json()).then(data => {
+      trainrt[i] = data;
+      if (i == trainIds.length-1) {
+        trainrtLoaded = true;
+        console.log('rt loaded');
+      }
+    });
+  }
+}
+
+
+const waitStBoardandClasses = () => {
+  return new Promise((resolve) => {
+    const checkFinished = () => {
+      if (stboardLoaded && busclassesLoaded) {
+        resolve();
+      } else {
+        setTimeout(checkFinished, 100); // Check again after 100 milliseconds
+      }
+    };
+    checkFinished();
+  });
+};
+
+const waitShapesandRT = () => {
+  return new Promise((resolve) => {
+    const checkFinished = () => {
+      if (shapesloaded && trainrtLoaded) {
+        // console.log('shapes and rt loaded');
+        // console.log('trainrt: ' + trainrt);
+        // console.log('json_shapes: ' + json_shapes);
+        resolve();
+      } else {
+        setTimeout(checkFinished, 100); // Check again after 100 milliseconds
+      }
+    };
+    checkFinished();
+  });
+};
+
+waitStBoardandClasses().then(() => {
+  console.log('stboard and classes loaded');
+  console.log('stboard: ' + json);
+  loadShapes();
+  loadRT();
+  const icons = document.querySelectorAll('.busRouteNum');
+  icons.forEach(icon => {
+      const busnum = icon.textContent;
+      const busclass = Object.keys(busclassList).find(key => busclassList[key].includes(busnum));
+      icon.classList.add(busclass);
+  });
+});
+
+function calculateMarkerSize(zoomLevel) {
+  const minSize = 10;
+  const maxSize = 60;
+  const minZoom = 3;
+  const maxZoom = 18;
+  
+  return minSize + (maxSize - minSize) * (zoomLevel - minZoom) / (maxZoom - minZoom);
+}
+
+function createArrowIcon(text, size, idx) {
+  return L.divIcon({
+      html: `
+          <div class="icon-container" style="width:${size}px;height:${size}px;">
+              <img src = "rotated_bus_icon.png" width="40" height="40" class="arrow-icon">
+              <div class="marker-text bustype_${json.journey[idx].pr}" style="font-size:${size/4}px;">${text}</div>
+          </div>
+      `,
+      className: '',
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2]
+  });
+}
+// <path d="M10 0 L20 20 L10 15 L0 20 Z" fill="${}"/>
+
+function interpolate(p1, p2, fraction) {
+  return [
+      p1[0] + (p2[0] - p1[0]) * fraction,
+      p1[1] + (p2[1] - p1[1]) * fraction
+  ];
+}
+
+function getBearing(start, end, prevBearing) {
+  var startLat = start[0] * Math.PI / 180;
+  var startLng = start[1] * Math.PI / 180;
+  var endLat = end[0] * Math.PI / 180;
+  var endLng = end[1] * Math.PI / 180;
+
+  var dLng = endLng - startLng;
+
+  var y = Math.sin(dLng) * Math.cos(endLat);
+  var x = Math.cos(startLat) * Math.sin(endLat) -
+          Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
+
+  var bearing = Math.atan2(y, x) * 180 / Math.PI;
+  
+  const diff = bearing - prevBearing;
+  const normalizedDiff = ((diff + 540) % 360) - 180;
+  return prevBearing + normalizedDiff;
+}
+
+  // Function to calculate distance between two points in meters
+  function calculateDistance(latlng1, latlng2) {
+    return map.distance(latlng1, latlng2);
+}
+
+var markers = [];
+waitShapesandRT().then(() => {
+  markers = new Array(json.journey.length);
+
+  for (let i = 0; i < trainrt[0].JourneyDetail.Stop.length; i++) {
+    if (trainrt[0].JourneyDetail.Stop[i].name == stationName) {
+      var x = trainrt[0].JourneyDetail.Stop[i].x;
+      var y = trainrt[0].JourneyDetail.Stop[i].y;
+      console.log('x: ' + x + ' y: ' + y);
+      L.marker([y/div, x/div], {icon: L.icon({iconUrl: 'pics\\busstop.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32]})}).addTo(map);
+      break;
+    }
+  }
+
+  let routes = json_shapes.map(shape => shape[0].map(v => ([ v[1], v[0] ])));
+  console.log('route length: ' + routes.length);
+  for (let i = 0; i < trainrt.length; i++) {//the length of trainrt and json_shapes must be the same.
+
+    var marker = L.marker(routes[i][0], {icon: createArrowIcon(trainrt[i].JourneyDetail.JourneyLine.line, 50, i)}).addTo(map);
+    
+    markers[i] = marker;
+    var display = '';
+    if (!json.journey[i].rt.dlt) {
+      display = 'style="display: none; font-size: 1.15em !important;"';
+    }
+    var prognosis = json.journey[i].ti;
+    if (json.journey[i].rt.dlt) {
+      prognosis = json.journey[i].rt.dlt;
+    }else{
+      prognosis = json.journey[i].ti;
+    }
+
+    // Add popup to marker
+    marker.bindPopup(`
+      <div class="bar" style="background-color: rgb(255, 255, 255); padding: 0px; padding-bottom: 10px; ">
+        <div class="busRouteNum bustype_default bustype_${json.journey[i].pr}" style="margin-left: 75px;">
+          ${trainrt[i].JourneyDetail.JourneyLine.line}
+        </div>
+        <div class="busRouteDest" style="font-size: 1.25em;" >
+          ${json.journey[i].st}
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: row;  ">
+        <div style="font-size: 1.06em; display: flex">
+          <b>Afgang fra ${stationName}: </b>
+        </div>
+        <div class="departureDiv" style="display: flex; flex-direction: column;">
+          <div style="font-size: 1.45em;">
+            ${prognosis}
+          </div>
+          <div class="originDelayTime" ${display} >
+            ${json.journey[i].ti}
+          </div>
+        </div> 
+      </div>
+      `);
+      
+  }
+
+  const pausetime = 1000;
+
+  function calculateInitialPosition(shapes1, trainrt, id) {
+    const journey_length = trainrt.JourneyDetail.Stop.length;
+    var totalDistance = 0;
+    var distances = [];
+    
+    const shapes = json_shapes[id][0];
+    var shape_index = shapes.length - 1;
+    var journey_index = Number(trainrt.JourneyDetail.Stop[journey_length - 1].routeIdx);
+    var journey_raw_index = journey_length - 1;
+  
+    const prognosis = json.journey[id].rt;
+    var delay = 0;
+    if (prognosis){
+        delay = timeToSeconds(prognosis.dlt) - timeToSeconds(json.journey[id].ti);
+        console.log('prognosis: ' + delay);
+    }
+  
+    for (let i = 1; i < journey_length - 1; i++) {
+      var busstop_deptime = timeToSeconds(trainrt.JourneyDetail.Stop[i].depTime);
+  
+      if (busstop_deptime + delay > dummyTime) {
+        journey_raw_index = i-1;
+        journey_index = Number(trainrt.JourneyDetail.Stop[(i-1)].routeIdx);
+        shape_index = json_shapes[id][1][journey_index][0];
+        if (id == 1) {
+        console.log('id: ' + id + ' shape index: ' + shape_index + ' journey_index: ' + journey_index + ' station: ' + trainrt.JourneyDetail.Stop[journey_raw_index].name);
+        }
+        break;
+      }
+    }
+  
+    for (let i = shape_index; i < shapes.length - 1; i++) {
+        const segmentDistance = calculateDistance(L.latLng(shapes[i]), L.latLng(shapes[i+1]));
+        distances.push(segmentDistance);
+        totalDistance += segmentDistance;
+    }
+  
+    var totalTime = 0.00001;
+    if (journey_raw_index < journey_length - 1) {
+      totalTime = timeToSeconds(trainrt.JourneyDetail.Stop[journey_length - 1].arrTime) + delay -
+                  timeToSeconds(trainrt.JourneyDetail.Stop[journey_raw_index].depTime) - (pausetime/1000) * (journey_length - journey_raw_index - 1);
+    }else{
+      return { index: shapes.length - 1, distance: 0, speed: 0, nextStop: shapes.length - 1 };
+    }
+    const bus_speed = totalDistance / totalTime;
+    // console.log('trainrt.JourneyDetail.Stop[journey_index].depTime: ' + trainrt.JourneyDetail.Stop.length);
+    const elapsedTime = dummyTime - timeToSeconds(trainrt.JourneyDetail.Stop[journey_raw_index].depTime) - delay;
+    console.log('elapsed time: ' + elapsedTime + ' deptime: ' + trainrt.JourneyDetail.Stop[journey_raw_index].depTime + ' total time: ' + totalTime);
+    const distanceTraveled = bus_speed * elapsedTime;
+  
+    if (distanceTraveled >= totalDistance) {
+        return { index: shapes.length - 1, distance: 0, speed: 0, nextStop: shapes.length - 1 };
+    }
+    // console.log(' distances length: ' + distances.length + ' distanceTraveled: ' + distanceTraveled);
+    var cumulativeDistance = 0;
+    for (let i = 0; i < distances.length; i++) {
+      if (id == 1) {
+        // console.log('distances[i]: ' + (cumulativeDistance + distances[i]) + ' i ' + i);
+      }
+        if (cumulativeDistance + distances[i] > distanceTraveled) {
+          const f = trainrt.JourneyDetail.Stop[journey_raw_index].routeIdx;
+          const f1 = trainrt.JourneyDetail.Stop[journey_raw_index + 1].routeIdx;
+          if (id == 1) {
+            console.log('index i ' + (i + shape_index) + ' prev stop ' + json_shapes[id][1][f][0] + ' next stop: ' + json_shapes[id][1][f1][0] + ' shapes_length: ' + shapes.length + ' journey_index: ' + (journey_raw_index + 1) +' stops_length: ' + json_shapes[id][1].length);  
+          }
+            return { index: (i + shape_index), distance: 0, speed: bus_speed, nextStop: (journey_raw_index + 1) };
+        }
+        cumulativeDistance += distances[i];
+    }
+  
+    return { index: 0, distance: 0, speed: 0, nextStop: 1 };
+  }
+
+  // Initialize animation parameters for all routes
+  var animationParams = routes.map((route, i) => {
+    const as = {
+      ...calculateInitialPosition(route, trainrt[i], i),
+      stopBegin: -1,
+      lastUpdateTime: Date.now(),
+      visible: true,
+      bearing: 0,
+      stops: 0,
+    };
+    if (i == 1) {
+    console.log('as: ' + as.nextStop);
+    }
+    return as;
+  });
+  var speed = 900; // Speed in distance units per second
+  var zoom = -1;
+
+  var animationFrameId = null;
+  var backgroundInterval = null;
+
+  function animateMarkers() {
+      var bounds = map.getBounds();
+      var currentTime = Date.now();
+      var visibleMarkers = 1;
+      var currentZoom = map.getZoom();
+      var markerSize = calculateMarkerSize(currentZoom);
+
+      routes.forEach((route, idx) => {
+          var params = animationParams[idx];
+          var currentTime1 = currentTime - params.stops * pausetime;
+          // console.log('idx: ' + idx + ' trainrt ' + trainrt[idx].JourneyDetail.Stop[params.nextStop + params.stops]);
+          // console.log('idx: ' + idx + ' params.index: ' + params + ' routes[idx].length: ' + routes[idx].length);
+                      
+          if (params.nextStop + params.stops < trainrt[idx].JourneyDetail.Stop.length - 1 && json_shapes[idx][1][trainrt[idx].JourneyDetail.Stop[params.nextStop + params.stops].routeIdx][0] < params.index) {
+            if (idx == num) {
+              console.log('id ' + idx + ' next stop: ' + json_shapes[idx][1][trainrt[idx].JourneyDetail.Stop[params.nextStop + params.stops].routeIdx][0]);
+            }
+            // wait for 10 seconds at the stop
+            if (params.stopBegin == -1) {
+              params.stopBegin = currentTime1;
+            }
+            else if (currentTime1 - params.stopBegin > pausetime) {
+              params.stopBegin = -1;
+              params.stops++;
+            }
+          }
+          else if (timeToSeconds(trainrt[idx].JourneyDetail.Stop[0].depTime) > dummyTime) {
+            if (params.visible) {
+              markers[idx].setOpacity(0);
+              params.visible = false;
+            }
+          }
+          else if (params.index < routes[idx].length - 2) {
+              var start = routes[idx][params.index];
+              var end = routes[idx][params.index + 1];
+              var segmentLength = calculateDistance(start, end);
+              var timePassed = (currentTime1 - params.lastUpdateTime) / 1000; // in seconds
+              var distanceTraveled = params.speed * timePassed;
+
+              params.distance += distanceTraveled;
+              while (params.distance > segmentLength && params.index < routes[idx].length - 2) {
+                params.distance -= segmentLength;
+                params.index++;
+                start = routes[idx][params.index];
+                end = routes[idx][params.index + 1];
+                segmentLength = calculateDistance(start, end);
+              }
+
+
+              var fraction = params.distance / (segmentLength + 0.0001);
+              var point = interpolate(start, end, fraction);
+
+              // Check if the marker is within the current view
+              var isVisible = bounds.contains(point);
+
+              if (isVisible) {
+                visibleMarkers++;
+                markers[idx].setLatLng(point);
+                var bearing = getBearing(routes[idx][params.index], routes[idx][params.index + 1], params.bearing);
+                markers[idx].getElement().querySelector('img').style.transform = `rotate(${bearing}deg)`;
+                params.bearing = bearing
+              }
+              // Update visibility status
+              if (isVisible !== params.visible) {
+                  params.visible = isVisible;
+                  if (isVisible) {
+                      markers[idx].setOpacity(1); // Make marker visible
+                      markers[idx].setZIndexOffset(0);
+                  } else {
+                      markers[idx].setOpacity(0); // Make marker invisible
+                      markers[idx].setZIndexOffset(99);
+                  }
+              }
+
+              params.lastUpdateTime = currentTime1;
+
+          }else{
+            animationParams[idx].speed = 0;
+          }
+          if (currentZoom !== zoom) {
+            markers[idx].setIcon(createArrowIcon(trainrt[idx].JourneyDetail.JourneyLine.line, markerSize,idx));
+            markers[idx].getElement().querySelector('img').style.transform = `rotate(${params.bearing}deg)`;
+          }
+      });
+      if (currentZoom !== zoom) {
+          zoom = currentZoom;
+      }
+
+      if (visibleMarkers > 0) {
+        if (backgroundInterval) {
+            clearInterval(backgroundInterval);
+            backgroundInterval = null;
+        }
+        animationFrameId = requestAnimationFrame(animateMarkers);
+      } else {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        if (!backgroundInterval) {
+            backgroundInterval = setInterval(animateMarkers, 500);
+        }
+      }
+  }
+
+  // Start the animation
+  animateMarkers();
+
+  map.on('moveend zoomend', function() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    if (backgroundInterval) {
+      clearInterval(backgroundInterval);
+    }
+    animateMarkers();
+    console.log('getview: ' + map.getBounds().getNorthEast() + ' ' + map.getBounds().getSouthWest());
+  });
+
+});
+

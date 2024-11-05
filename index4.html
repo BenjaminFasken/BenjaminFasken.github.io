@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Departure and Journey Info</title>
+    <link rel="stylesheet" href="bus_classes.css"> <!-- Update the path accordingly -->
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text color for contrast */
+            font-size: 1.1em; /* Slightly larger base font size */
+            padding: 5px;
+        }
+
+        /* Bar Container */
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 98%; /* Responsive width */
+            margin: 0 auto;
+        }
+
+        /* Individual Bar Styles */
+        .bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background-color: #1e1e1e; /* Dark bar background */
+            padding: 10px 1vw;
+            margin-bottom: 5px;
+            flex-grow: 1;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 1.1em; /* Consistent with base font size */
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .bar:nth-child(even) {
+            background-color: #2a2a2a; /* Slightly lighter for even bars */
+        }
+
+        /* Header Bar Specific Styles */
+        .header-bar {
+            background-color: #1a1a1a; /* Darker header background */
+            font-weight: bold;
+            color: #ffffff; /* White text for header */
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Bus Route Number */
+        .busRouteNum, .stopIndex {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            justify-content: center;
+            align-items: center;
+            border-radius: 3px;
+            width: 4em; /* Consistent width min-width: calc(max-content + 1em);*/
+            height: 2.5em; /* Consistent height */
+            margin-right: 1em;
+            font-weight: bold;
+            padding: 0.25em;
+            background-color: #555555; /* Darker background for prominence */
+            color: #ffffff; /* Light text color */
+            font-size: 1.1em; /* Increased font size */
+        }
+
+        /* Bus Route Destination */
+        .busRouteDest, .stopName {
+            flex: 2;
+            margin-right: 2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.1em; /* Increased font size */
+            color: #e0e0e0; /* Light text color */
+        }
+
+        /* Right Side Board */
+        .rightboard, .timeInfo {
+            display: flex;
+            align-items: center;
+            text-align: right;
+            flex: 1;
+            justify-content: flex-end;
+            color: #e0e0e0; /* Light text color */
+        }
+
+        /* Platform Information */
+        .platformDiv {
+            color: #bbbbbb; /* Slightly lighter for less emphasis */
+            font-weight: bold;
+            width: 5em;
+            display: none; /* Hidden by default */
+            margin-right: 1em;
+            font-size: 1em;
+        }
+
+        /* Departure Information */
+        .departureDiv{
+            width: 5em;
+            text-align: right;
+            font-size: 1.1em; /* Increased font size */
+            color: #e0e0e0; /* Light text color */
+        }
+
+        .timeInfo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex: 2;
+        }
+
+        .depTime {
+            font-weight: bold;
+            color: #ffffff; /* White for departure time */
+        }
+
+        .originDelayTime {
+            font-size: 0.9em;
+            color: #ff6b6b; /* Light red for delays */
+            text-decoration: line-through;
+        }
+
+        .subtext {
+            font-size: 0.8em;
+            font-weight: normal;
+            margin-top: 2px;
+            color: #aaaaaa; /* Light gray for subtext */
+        }
+        .idbusRouteNum {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            min-width: 2.5em; /* Increased width for better visibility */
+            padding-left: .7em;
+            padding-right: .7em;
+            /* width: calc(content + 2em); */
+            height: 1.8em; /* Slightly reduced height for less space underneath the text */
+            font-weight: bold;
+            background-color: #555555; /* Darker background for prominence */
+            color: #ffffff; /* Light text color */
+            font-size: 1.1em; /* Increased font size */
+        }
+
+        .idbusRouteDest {
+            margin-right: 2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.1em; /* Increased font size */
+            color: #e0e0e0; /* Light text color */
+        }
+
+
+        /* Route Container Specific Styles */
+        #route-container .bar {
+            padding: 15px 1vw; /* Increased padding for route bars */
+        }
+
+        /* Hide route-container by default */
+        #route-container {
+            display: none;
+        }
+
+        /* Scrollbar Styling for Dark Mode */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #555555;
+            border-radius: 6px;
+            border: 3px solid #2a2a2a;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 600px) {
+            .busRouteNum, .stopIndex {
+                width: 3em;
+                height: 2em;
+                font-size: 1em;
+            }
+
+            .busRouteDest, .stopName {
+                margin-right: 1em;
+                font-size: 1em;
+            }
+
+            .departureDiv, .timeInfo {
+                width: auto;
+                text-align: right;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Departure Board Container -->
+    <div id="stboard-container" class="bar-container">
+        <!-- Header Bar for Departure Board -->
+        <div class="bar header-bar">
+            <div class="busRouteNum" style="background-color: transparent; color: #ffffff; align-items: flex-start;">
+                <div>Linje</div>
+                <div class="subtext">Line</div>
+            </div>
+            <div class="busRouteDest">
+                <div style="font-weight: bold;">Til</div>
+                <div class="subtext">To</div>
+            </div>
+            <div class="rightboard">
+                <div class="platformDiv" style="display: block;">
+                    <div>Perron</div>
+                    <div class="subtext">Platform</div>
+                </div>
+                <div class="departureDiv">
+                    <div style="font-weight: bold;">Afgang</div>
+                    <div class="subtext">Departure</div>
+                </div>
+            </div>
+        </div>
+        <!-- Departure bars will be dynamically added here -->
+    </div>
+
+    <!-- Route Container -->
+    <div id="route-container" class="bar-container">
+        <!-- Header Bar for Route -->
+        <div style="padding: 10px; position: fixed;">
+            <div class="bar header-bar">
+                <div class="busdiv" style="display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <div id="bus-line" class="idbusRouteNum" style="margin-right: 10px;"></div>
+                    <div id="bus-name" class="idbusRouteDest"></div>
+                    <!-- Removed Date Display -->
+                </div>
+            </div>
+        </div>
+        <!-- Route bars will be dynamically added here -->
+    </div>
+
+    <script>
+
+        const path = 'utils/traffic_data/8600020';
+
+
+        // Function to load and display departure data
+        var sim_on = true;
+        var sim_year = 2024;
+        var sim_month = 6; // July (0-based: 6 = July)
+        var sim_day = 30;
+        var sim_hour = 13;
+        var sim_minute = 19;
+        var sim_second = 40; 
+
+        // Initialize the simulation start time
+        const sim_start_time = new Date(sim_year, sim_month, sim_day, sim_hour, sim_minute, sim_second).getTime();
+        const currentTime = sim_on ? sim_start_time : Date.now();
+        
+        // Function to parse time strings into timestamps
+        function parseTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const date = new Date(currentTime);
+            date.setHours(hours, minutes, 0, 0); // Set hours and minutes
+            return date.getTime();
+        }
+
+        async function loadDepartureData() {
+            try {
+                // Fetch departure data
+                const departureResponse = await fetch(`${path}/stboard.json`); // Update the path accordingly
+                if (!departureResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${departureResponse.status}`);
+                }
+                const departureData = await departureResponse.json();
+                const departures = departureData.DepartureBoard.Departure;
+
+                // Fetch bus class data
+                const busClassResponse = await fetch('bus_data.json'); // Update the path accordingly
+                if (!busClassResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${busClassResponse.status}`);
+                }
+                const busClassData = await busClassResponse.json();
+
+                const barContainer = document.querySelector('#stboard-container');
+
+                departures.forEach((dep, index) => {
+                    // Create bar elements
+                    const newBar = document.createElement('div');
+                    newBar.classList.add('bar');
+
+                    // Set data-index attribute
+                    newBar.dataset.index = index;
+
+                    const icon = document.createElement('div');
+                    icon.classList.add('busRouteNum');
+
+                    const busName = document.createElement('div');
+                    busName.classList.add('busRouteDest');
+                    busName.textContent = dep.direction || 'N/A';
+
+                    const rightbar = document.createElement('div');
+                    rightbar.classList.add('rightboard');
+
+                    const platform = document.createElement('div');
+                    platform.classList.add('platformDiv');
+                    if (dep.track) {
+                        platform.textContent = dep.track;
+                        platform.style.display = 'block';
+                    }
+
+                    const busDepartureDiv = document.createElement('div');
+                    busDepartureDiv.classList.add('departureDiv');
+
+                    const departureTime = document.createElement('div');
+                    departureTime.classList.add('depTime');
+
+                    const departureDelay = document.createElement('div');
+                    departureDelay.classList.add('originDelayTime');
+
+                    // Set departure times
+                    if (dep.rtTime) {  
+                        departureTime.textContent = dep.rtTime;
+                        departureDelay.textContent = dep.time;
+                        departureDelay.style.display = 'block';
+                    } else {
+                        departureTime.textContent = dep.time || 'N/A';
+                        departureDelay.style.display = 'none';
+                    }
+
+                    // Set bus number and classes
+                    const busnum = dep.line || 'N/A';
+                    icon.textContent = busnum;
+                    const busClass = busClassData[busnum] || 'defaultbus';
+                    icon.classList.add(busClass, 'route-number');
+
+                    // Assemble the bar
+                    busDepartureDiv.appendChild(departureTime);
+                    busDepartureDiv.appendChild(departureDelay);
+                    rightbar.appendChild(platform);
+                    rightbar.appendChild(busDepartureDiv);
+                    newBar.appendChild(icon);
+                    newBar.appendChild(busName);
+                    newBar.appendChild(rightbar);
+                    barContainer.appendChild(newBar);
+
+                    // Add click event listener
+                    newBar.addEventListener('click', function() {
+                        loadRouteData(index);
+                    });
+                });
+
+            } catch (error) {
+                console.error('Error fetching departure data:', error);
+                const barContainer = document.querySelector('#stboard-container');
+                barContainer.innerHTML += '<p>Failed to load departure data.</p>';
+            }
+        }
+
+        // Function to load and display route data
+        async function loadRouteData(index) {
+            const routeFile = `${path}/lines/${index}.json`;
+
+            try {
+                const response = await fetch(routeFile);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // Fetch bus class data
+                const busClassResponse = await fetch('bus_data.json'); // Update the path accordingly
+                if (!busClassResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${busClassResponse.status}`);
+                }
+                const busClassData = await busClassResponse.json();
+                displayRouteData(data, busClassData);
+                
+                // Hide stboard-container and show route-container
+                document.getElementById('stboard-container').style.display = 'none';
+                document.getElementById('route-container').style.display = 'flex';
+                // Push a new state into the history
+                history.pushState({page: 'route', index: index}, '', '');
+            } catch (error) {
+                console.error('Error fetching route data:', error);
+                alert('Failed to load route data.');
+            }
+        }
+
+        // Function to display route data
+        function displayRouteData(data, busClassData) {
+
+            const busLine = document.getElementById('bus-line');
+            const busName = document.getElementById('bus-name');
+
+            let lineinfo = data.JourneyDetail.JourneyLine.line || 'N/A';
+            if (lineinfo === 'N/A') {
+                lineinfo = data.JourneyDetail.JourneyLine[0].line || 'N/A';
+            }
+            const nameinfo = data.JourneyDetail.Note[0].text || 'N/A';
+            
+            busLine.textContent = lineinfo;
+            busName.textContent = nameinfo.replace('Retning: ', '');
+
+            const busClass = busClassData[lineinfo] || 'defaultbus';
+            busLine.classList.add(busClass, 'route-number');            
+            
+            // Clear the route-container except the header bar
+            const routeContainer = document.getElementById('route-container');
+            const headerBar = routeContainer.querySelector('.header-bar');
+            routeContainer.innerHTML = '';
+            routeContainer.appendChild(headerBar);
+
+            const stops = data.JourneyDetail.Stop;
+
+            stops.forEach((stop, index) => {
+                // Create bar element
+                const newBar = document.createElement('div');
+                newBar.classList.add('bar');
+
+                // Stop Name
+                const stopName = document.createElement('div');
+                stopName.classList.add('stopName');
+                stopName.textContent = stop.name || 'N/A';
+
+                // Time Information
+                const timeInfo = document.createElement('div');
+                timeInfo.classList.add('timeInfo');
+
+                const depTime = document.createElement('div');
+                depTime.classList.add('depTime');
+
+                const depDelay = document.createElement('div');
+                depDelay.classList.add('originDelayTime');
+
+                // Check for real-time departure time
+                const time = stop.rtDepTime || stop.depTime || stop.rtArrTime || stop.arrTime || 'N/A';
+                const delay = (stop.rtDepTime && stop.rtDepTime !== stop.depTime) ? stop.depTime :
+                              (stop.rtArrTime && stop.rtArrTime !== stop.arrTime) ? stop.arrTime : null;
+                
+                              depTime.textContent = time;
+                if (delay) {
+                    depDelay.textContent = delay;
+                    depDelay.style.display = 'block';
+                } else {
+                    depDelay.style.display = 'none';
+                }
+                
+                newBar.dataset.depTime = time; // Add this line
+
+                // Assemble time information
+                timeInfo.appendChild(depTime);
+                timeInfo.appendChild(depDelay);
+
+                // Assemble the bar
+                newBar.appendChild(stopName);
+                newBar.appendChild(timeInfo);
+
+                // Append the bar to the container
+                routeContainer.appendChild(newBar);
+            });
+
+
+            // After appending all bars, find the target bar to scroll to
+            let targetBar = null;
+    
+            const bars = routeContainer.querySelectorAll('.bar');
+            for (let bar of bars) {
+                const depTimeStr = bar.dataset.depTime;
+                if (depTimeStr && depTimeStr !== 'N/A') {
+                    const depTimeParsed = parseTime(depTimeStr);
+                    if (depTimeParsed > currentTime) {
+                        console.log('Found target bar:', bar);
+                        targetBar = bar.previousElementSibling?.previousElementSibling || bar;
+                        break;
+                    }
+                }
+            }
+
+            if (targetBar) {
+                requestAnimationFrame(() => {
+                    targetBar.scrollIntoView({ block: 'start'});
+                    console.log('Scrolled to target bar.');
+                });
+            }
+
+        }
+
+        // Handle the browser's back button
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.page === 'route') {
+                // If navigating back to the route page
+                loadRouteData(event.state.index);
+            } else {
+                // Show the stboard view
+                document.getElementById('route-container').style.display = 'none';
+                document.getElementById('stboard-container').style.display = 'flex';
+            }
+        });
+
+        // Load data when the page is fully loaded
+        window.addEventListener('DOMContentLoaded', function() {
+            loadDepartureData();
+            // Replace the initial state
+            history.replaceState({page: 'stboard'}, '', '');
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Route Animation with Station Stops</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include Leaflet CSS and JavaScript -->
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <style>
+        .leaflet-control-attribution { display: none !important; }
+        #map { height: 100vh; }
+        /* Smooth rotation transition */
+        .rotated-marker img {
+            transition: transform 0.2s linear;
+            width: 24px; /* Adjust to desired size */
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Simulation Settings
+        var sim_on = true;
+        var sim_year = 2024;
+        var sim_month = 6; // July (0-based: 6 = July)
+        var sim_day = 30;
+        var sim_hour = 13;
+        var sim_minute = 20;
+        var sim_second = 0;
+
+        var speed_factor = 20; // Speed factor for simulation (1 = real-time)
+
+        // Initialize the simulation start time
+        var sim_start_time = new Date(sim_year, sim_month, sim_day, sim_hour, sim_minute, sim_second).getTime();
+        var real_start_time = Date.now();
+
+        // Function to get the current simulation time
+        function getCurrentTime() {
+            if (sim_on) {
+                return speed_factor * (Date.now() - real_start_time) + sim_start_time;
+            } else {
+                return Date.now();
+            }
+        }
+
+        // Initialize the map
+        var map = L.map('map');
+
+        // Add Tile Layer
+        L.tileLayer("https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=KcoL2eYvC6zyiSr1kiT2", {
+            attribution: ''
+        }).addTo(map);    
+
+        // Define the bus icon as a DivIcon with adjusted size
+        var busIcon = L.divIcon({
+            html: '<img src="bus_icon.png" style="transform: rotate(0deg);" />',
+            iconSize: [24, 24], // Set desired size
+            iconAnchor: [12, 12], // Center the icon
+            className: 'rotated-marker'
+        });
+
+        // Function to calculate the bearing between two points
+        function calculateBearing(latlng1, latlng2) {
+            var lat1 = latlng1[0] * Math.PI / 180;
+            var lon1 = latlng1[1] * Math.PI / 180;
+            var lat2 = latlng2[0] * Math.PI / 180;
+            var lon2 = latlng2[1] * Math.PI / 180;
+
+            var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            var x = Math.cos(lat1) * Math.sin(lat2) -
+                    Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            var bearing = Math.atan2(y, x);
+            bearing = bearing * 180 / Math.PI;
+            bearing = (bearing + 360) % 360;
+            return bearing;
+        }
+
+        // Function to load JSON files
+        async function loadJSON(path) {
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error(`Failed to load ${path}: ${response.statusText}`);
+            }
+            return response.json();
+        }
+
+        // Load both lines.json and shape.json
+        Promise.all([
+            loadJSON('utils/traffic_data/dummy/lines/0.json'),
+            loadJSON('utils/traffic_data/dummy/shapes/0.json')
+        ]).then(([lineData, shapeData]) => {
+            // Parse Stops from lines.json
+            var stops = lineData.JourneyDetail.Stop.map(stop => ({
+                name: stop.name,
+                coords: [parseFloat(stop.y) / 1000000, parseFloat(stop.x) / 1000000], // [lat, lng]
+                depTime: stop.depTime ? parseTime(stop.depTime, stop.depDate) : null,
+                arrTime: stop.arrTime ? parseTime(stop.arrTime, stop.arrDate) : null,
+                routeIdx: parseInt(stop.routeIdx)
+            }));
+
+            // Parse Stops from shapeData (for stop indices)
+            var shapeStops = shapeData[1].map(stop => ({
+                index: stop[0],
+                name: stop[1],
+                coords: [shapeData[0][stop[0]][1] / 1000000, shapeData[0][stop[0]][0] / 1000000] // [lat, lng]
+            }));
+
+            // Calculate cumulative distances along the polyline
+            var shapeCoords = shapeData[0]; // Assuming shapeData[0] is the array of [x, y]
+            var latlngs = shapeCoords.map(coord => [coord[1] / 1000000, coord[0] / 1000000]); // [lat, lng]
+
+            var cumulativeDistances = [0]; // Initialize with 0
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                var segmentDistance = map.distance(latlngs[i], latlngs[i + 1]); // in meters
+                cumulativeDistances.push(cumulativeDistances[i] + segmentDistance);
+            }
+
+            // Map stop indices to their cumulative distances
+            var stopDistances = shapeStops.map(stop => ({
+                name: stop.name,
+                coords: stop.coords,
+                distance: cumulativeDistances[stop.index]
+            })).sort((a, b) => a.distance - b.distance); // Ensure sorted order
+
+            // Parse Journey Times
+            var firstStop = stops[0];
+            var lastStop = stops[stops.length - 1];
+            var totalTimeMs = lastStop.arrTime - firstStop.depTime; // in milliseconds
+
+            // Calculate Total Distance
+            var totalDistance = cumulativeDistances[cumulativeDistances.length - 1]; // in meters
+
+            // Calculate Speed (meters per millisecond)
+            var speed = totalDistance / totalTimeMs;
+
+            // Draw the route polyline
+            var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+            map.fitBounds(polyline.getBounds());
+
+            // Initialize the bus marker
+            var marker = L.marker(latlngs[0], { icon: busIcon }).addTo(map);
+
+            // Initialize variables for stop management
+            var currentStopIndex = 0;
+            var elapsed_wait_time = 0;
+            var isPaused = false;
+
+            // Animation Function
+            function animateBus() {
+                var currentTime = getCurrentTime()  - elapsed_wait_time;
+
+                // If currentTime is before the first departure or after the last arrival, do not display the bus
+                if (currentTime < firstStop.depTime || currentTime > lastStop.arrTime) {
+                    // marker.setLatLng(latlngs[0]); // Reset to first position
+                    // marker.getElement().style.display = 'none';
+                    return;
+                } else {
+                    marker.getElement().style.display = 'block';
+                }
+
+                // Calculate elapsed time since first departure
+                var elapsedTime = currentTime - firstStop.depTime; // in milliseconds
+
+                // Calculate distance traveled
+                var distanceTraveled = speed * elapsedTime; // in meters
+
+                // Check if the bus has reached the next stop
+                if (currentStopIndex < stopDistances.length) {
+                    var nextStop = stopDistances[currentStopIndex];
+                    if (distanceTraveled >= nextStop.distance && !isPaused) {
+                        // Pause the animation
+                        isPaused = true;
+                        // Set bus position to the stop
+                        marker.setLatLng(nextStop.coords);
+                        // Rotate the bus to face the next segment if not the last stop
+                        if (currentStopIndex < stopDistances.length - 1) {
+                            var nextSegmentLatLng = stopDistances[currentStopIndex + 1].coords;
+                            var angle = calculateBearing(nextStop.coords, nextSegmentLatLng);
+                            var icon = marker.getElement().querySelector('img');
+                            if (icon) {
+                                icon.style.transform = `rotate(${angle}deg)`;
+                            }
+                        }
+                        // Increment the stop index
+                        currentStopIndex++;
+
+                        // Calculate pause duration in milliseconds (10 seconds simulated)
+                        var pauseDurationMs = 10000; 
+                        
+                        // Set a timeout to resume animation after pauseDurationMs
+                        setTimeout(() => {
+                            isPaused = false;
+                            elapsed_wait_time += pauseDurationMs;
+                        }, pauseDurationMs / speed_factor);
+                    }
+                }
+
+                // If not paused, update the bus position
+                if (!isPaused) {
+                    // Calculate position along the polyline
+                    var position = getPositionAtDistance(latlngs, distanceTraveled);
+
+                    if (position) {
+                        marker.setLatLng(position.latlng);
+
+                        // Set rotation based on the next segment
+                        if (position.nextLatLng) {
+                            var angle = calculateBearing(position.latlng, position.nextLatLng);
+                            var icon = marker.getElement().querySelector('img');
+                            if (icon) {
+                                icon.style.transform = `rotate(${angle}deg)`;
+                            }
+                        }
+                    }
+                } else {
+                    // During pause, keep the bus at the last stop position
+                    // Optionally, you can add any visual indication of the pause
+                }
+
+                requestAnimationFrame(animateBus);
+            }
+
+            // Start the animation
+            animateBus();
+
+            // Function to parse time strings into timestamps
+            function parseTime(timeStr, dateStr) {
+                // timeStr format: "13:20"
+                // dateStr format: "30.07.24"
+                var [day, month, yearSuffix] = dateStr.split('.');
+                var year = parseInt(yearSuffix) + 2000; // Assuming 21st century
+                var [hour, minute] = timeStr.split(':').map(Number);
+                return new Date(year, month - 1, day, hour, minute, 0).getTime();
+            }
+
+            // Function to get position at a specific distance along the polyline
+            function getPositionAtDistance(latlngs, distance) {
+                for (let i = 0; i < latlngs.length - 1; i++) {
+                    var segmentDistance = map.distance(latlngs[i], latlngs[i + 1]);
+                    if (distance <= segmentDistance) {
+                        var ratio = distance / segmentDistance;
+                        var lat = latlngs[i][0] + (latlngs[i + 1][0] - latlngs[i][0]) * ratio;
+                        var lng = latlngs[i][1] + (latlngs[i + 1][1] - latlngs[i][1]) * ratio;
+                        return {
+                            latlng: [lat, lng],
+                            nextLatLng: latlngs[i + 1]
+                        };
+                    }
+                    distance -= segmentDistance;
+                }
+                return null;
+            }
+
+        }).catch(error => {
+            console.error('Error loading JSON files:', error);
+        });
+    </script>
+</body>
+</html>

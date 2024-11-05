@@ -1,0 +1,64 @@
+.metrobus.route-number {
+  background-color: #be1e2d;
+  color: #fff;
+ }
+
+
+.bybus.route-number {
+  background-color: #ffaa47;
+  color: #282826;
+ }
+
+
+.regionalbus.route-number {
+  background-color: #a7b1b7;
+  color: #282826;
+ }
+
+
+.expresbus.route-number {
+  background-color: #007ac2;
+  color: #fff;
+ }
+
+
+.natbus.route-number {
+  background-color: #1a506d;
+  color: #fff;
+ }
+
+
+.lokalbus.route-number {
+  background-color: #007c3f;
+  color: #fff;
+ }
+
+
+.flexlinje.route-number {
+  background-color: #888;
+  color: #fff;
+ }
+
+
+.telebus.route-number {
+  background-color: #c8e06e;
+  color: #282826;
+ }
+
+
+.teletaxi.route-number {
+  background-color: #c8e06e;
+  color: #282826;
+ }
+
+.sommerbus.route-number {
+  background-color: #a7b1b7;
+  color: #282826;
+ }
+
+
+.tog.route-number {
+  background-color: #003976;
+  color: #fff;
+ }
+

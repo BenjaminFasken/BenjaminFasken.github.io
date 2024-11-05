@@ -1,0 +1,4 @@
+GTFS/trips.txt filter=lfs diff=lfs merge=lfs -text
+GTFS filter=lfs diff=lfs merge=lfs -text
+GTFS/ filter=lfs diff=lfs merge=lfs -text
+GTFS/* filter=lfs diff=lfs merge=lfs -text

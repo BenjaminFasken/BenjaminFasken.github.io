@@ -1,1 +1,328 @@
-hello world!"##"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journey Stops</title>
+    <link rel="stylesheet" href="bus_classes.css"> <!-- Update the path if necessary -->
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text color for contrast */
+            font-size: 1.1em; /* Slightly larger base font size */
+            padding: 20px;
+        }
+
+        /* Bar Container */
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%; /* Added width for better responsiveness */
+            margin: 0 auto;
+        }
+
+        /* Individual Bar Styles */
+        .bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background-color: #1e1e1e; /* Dark bar background */
+            padding: 15px 1vw;
+            margin-bottom: 5px;
+            flex-grow: 1;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 1.1em; /* Consistent with base font size */
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .bar:nth-child(even) {
+            background-color: #2a2a2a; /* Slightly lighter for even bars */
+        }
+
+        /* Header Bar Specific Styles */
+        .header-bar {
+            background-color: #1a1a1a; /* Darker header background */
+            font-weight: bold;
+            color: #ffffff; /* White text for header */
+        }
+
+        /* Stop Index */
+        .stopIndex {
+            width: 3em;
+            text-align: center;
+            margin-right: 1em;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* Stop Name */
+        .stopName {
+            flex: 3;
+            margin-right: 2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.1em; /* Increased font size */
+            color: #e0e0e0; /* Light text color */
+        }
+
+        /* Time Information */
+        .timeInfo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex: 2;
+        }
+
+        .depTime {
+            font-weight: bold;
+            color: #ffffff; /* White for departure time */
+        }
+
+        .originDelayTime {
+            font-size: 0.9em;
+            color: #ff6b6b; /* Light red for delays */
+            text-decoration: line-through;
+        }
+
+        .subtext {
+            font-size: 0.8em;
+            font-weight: normal;
+            margin-top: 2px;
+            color: #aaaaaa; /* Light gray for subtext */
+        }
+
+        .busRouteNum {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            width: 2.5em; /* Increased width for better visibility */
+            height: 1.8em; /* Slightly reduced height for less space underneath the text */
+            font-weight: bold;
+            background-color: #555555; /* Darker background for prominence */
+            color: #ffffff; /* Light text color */
+            font-size: 1.1em; /* Increased font size */
+        }
+
+        .busRouteDest {
+            margin-right: 2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.1em; /* Increased font size */
+            color: #e0e0e0; /* Light text color */
+        }
+
+        /* Scrollbar Styling for Dark Mode */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #555555;
+            border-radius: 6px;
+            border: 3px solid #2a2a2a;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Bar container where journey stops will be displayed -->
+    <div class="bar-container">
+        <!-- Header Bar -->
+        <div class="bar header-bar">
+
+            <div id="busdiv" style="display: flex; align-items: center; justify-content: center; width: 100%;">
+                <div id="bus-line" class="busRouteNum" style="margin-right: 10px;"></div>
+                <div id="bus-name" class="busRouteDest"></div>
+                <!-- Removed Date Display -->
+            </div>
+
+        </div>
+        <!-- Bars will be dynamically added here -->
+    </div>
+
+    <script>
+        // Function to load and display departure data
+        var sim_on = true;
+        var sim_year = 2024;
+        var sim_month = 6; // July (0-based: 6 = July)
+        var sim_day = 30;
+        var sim_hour = 13;
+        var sim_minute = 19;
+        var sim_second = 40; 
+    
+        // Initialize the simulation start time
+        const sim_start_time = new Date(sim_year, sim_month, sim_day, sim_hour, sim_minute, sim_second).getTime();
+        const currentTime = sim_on ? sim_start_time : Date.now();
+        
+        // Helper function to parse time strings into Date objects
+        function parseTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const date = new Date(currentTime);
+            date.setHours(hours, minutes, 0, 0); // Set hours and minutes
+            return date.getTime();
+        }
+    
+        // Function to load and display journey stops
+        async function loadJourneyStops() {
+            try {
+                // Fetch journey data
+                const response = await fetch('utils/traffic_data/dummy/lines/2.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                const stops = data.JourneyDetail.Stop;
+        
+                // Fetch bus class data
+                const busClassResponse = await fetch('bus_data.json'); // Update the path accordingly
+                if (!busClassResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${busClassResponse.status}`);
+                }
+                const busClassData = await busClassResponse.json();
+                    
+                const busLine = document.getElementById('bus-line');
+                const busName = document.getElementById('bus-name');
+    
+                const lineinfo = data.JourneyDetail.JourneyLine.line || 'N/A';
+                const nameinfo = data.JourneyDetail.Note[0].text || 'N/A';
+                
+                busLine.textContent = lineinfo;
+                busName.textContent = nameinfo.replace('Retning: ', '');
+    
+                const busClass = busClassData[lineinfo] || 'defaultbus';
+                busLine.classList.add(busClass, 'route-number');
+                
+                const barContainer = document.querySelector('.bar-container');
+    
+                stops.forEach((stop, index) => {
+                    // Create bar element
+                    const newBar = document.createElement('div');
+                    newBar.classList.add('bar');
+    
+                    // Stop Name
+                    const stopName = document.createElement('div');
+                    stopName.classList.add('stopName');
+                    stopName.textContent = stop.name || 'N/A';
+    
+                    // Time Information
+                    const timeInfo = document.createElement('div');
+                    timeInfo.classList.add('timeInfo');
+    
+                    const depTime = document.createElement('div');
+                    depTime.classList.add('depTime');
+    
+                    const depDelay = document.createElement('div');
+                    depDelay.classList.add('originDelayTime');
+    
+                    // Check for real-time departure time
+                    const time = stop.rtDepTime || stop.depTime || stop.rtArrTime || stop.arrTime || 'N/A';
+                    const delay = (stop.rtDepTime && stop.rtDepTime !== stop.depTime) ? stop.depTime :
+                                  (stop.rtArrTime && stop.rtArrTime !== stop.arrTime) ? stop.arrTime : null;
+    
+                    depTime.textContent = time;
+                    if (delay) {
+                        depDelay.textContent = delay;
+                        depDelay.style.display = 'block';
+                    } else {
+                        depDelay.style.display = 'none';
+                    }
+    
+                    // Assign a data attribute with departure time for easy access
+                    newBar.dataset.depTime = time; // Add this line
+    
+                    // Assemble time information
+                    timeInfo.appendChild(depTime);
+                    timeInfo.appendChild(depDelay);
+    
+                    // Assemble the bar
+                    newBar.appendChild(stopName);
+                    newBar.appendChild(timeInfo);
+    
+                    // Append the bar to the container
+                    barContainer.appendChild(newBar);
+                });
+
+
+    
+                // After appending all bars, find the target bar to scroll to
+                let targetBar = null;
+    
+                const bars = barContainer.querySelectorAll('.bar');
+                for (let bar of bars) {
+                    const depTimeStr = bar.dataset.depTime;
+                    if (depTimeStr && depTimeStr !== 'N/A') {
+                        const depTimeParsed = parseTime(depTimeStr);
+                        if (depTimeParsed > currentTime) {
+                            targetBar = bar;
+                            break;
+                        }
+                    }
+                }
+
+                
+                const busbar = document.getElementById('busdiv');
+                                    // Time Information
+                const timeInfo = document.createElement('div');
+                timeInfo.classList.add('timeInfo');
+
+                const depTime = document.createElement('div');
+                depTime.classList.add('depTime');
+
+                const depDelay = document.createElement('div');
+                depDelay.classList.add('originDelayTime');
+
+                // Check for real-time departure time
+                // const time = stop.rtDepTime || stop.depTime || stop.rtArrTime || stop.arrTime || 'N/A';
+                // const delay = (stop.rtDepTime && stop.rtDepTime !== stop.depTime) ? stop.depTime :
+                //                 (stop.rtArrTime && stop.rtArrTime !== stop.arrTime) ? stop.arrTime : null;
+                const time = targetBar.dataset.depTime;
+                const delay = targetBar.querySelector('.originDelayTime').textContent;
+
+                depTime.textContent = time;
+                if (delay) {
+                    depDelay.textContent = delay;
+                    depDelay.style.display = 'block';
+                } else {
+                    depDelay.style.display = 'none';
+                }
+
+                busbar.appendChild(timeInfo);
+                timeInfo.appendChild(depTime);
+                timeInfo.appendChild(depDelay);
+
+    
+                if (targetBar) {
+                    targetBar.scrollIntoView({  block: 'start' });
+                }
+    
+            } catch (error) {
+                console.error('Error fetching journey data:', error);
+                const barContainer = document.querySelector('.bar-container');
+                barContainer.innerHTML += '<p>Failed to load journey data.</p>';
+            }
+        }
+    
+        // Load data when the page is fully loaded
+        window.addEventListener('DOMContentLoaded', loadJourneyStops);
+    </script>
+    
+</body>
+</html>

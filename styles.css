@@ -1,0 +1,154 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+}
+
+header h1 {
+  margin: 0;
+}
+
+.map-container {
+  height: 60vh;
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* display:none; */
+}
+  
+.bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* font-weight: bold; */  
+  /* display:none; */
+}
+
+.bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #f2f2f2;
+  padding: 0.5vh 1vw;
+  margin-right: auto;
+  flex-grow: 1;
+}
+
+
+.busRouteNum,
+.busRouteDest,
+.platformDiv,
+.departureDiv{
+  padding: 0.5em;
+}
+
+.busRouteNum {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 0.1em;
+  width: 3.5em;
+  height: 2em;
+  padding: 0.25em;
+  margin-left: 0;
+  font-weight: bold;
+}
+
+.busRouteDest{
+  margin-left: 1em;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide any overflowing text */
+  text-overflow: ellipsis; /* Add ellipsis (...) when text overflows */
+  flex:1;
+}
+
+.rightboard{
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  text-align: right;
+}
+
+.platformDiv{
+  color: #909090;
+  font-weight: bold;
+  width: 4em;
+  display: none;
+}
+
+.departureDiv {
+  width: 4em;
+}
+
+
+.originDelayTime {
+font-size: 0.8em;
+color: #ff0000;
+text-decoration: line-through;
+/* display:none; */
+}
+
+.bar-guide-l {
+  text-align: left;
+}
+
+.bar-guide-r {
+  text-align: right;
+}
+
+.dk-bar-guide {
+  font-size: .9em;
+  font-weight: bold;
+  color: #000;
+}
+.en-bar-guide {
+  font-size: 0.7em;
+  color: #669;
+  font-weight: normal
+}
+
+.leaflet-marker-rotation-wrapper {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* ///// */
+
+.icon-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+.arrow-icon {
+  transition: transform 0.1s linear;
+  width: 100%;
+  height: 100%;
+}
+.marker-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(173, 216, 230, 0.7);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+

@@ -1,0 +1,46 @@
+.bustype_default {
+background-color: #a7b1b7;
+color: #000000;
+}
+
+.bustype_metrobus {
+background-color: #be1e2d;
+color: #ffffff;
+}
+.bustype_Bybus {
+background-color: #f8961f;
+color: #000;
+}
+.bustype_regionalbus {
+background-color: #a7b1b7;
+color: #000;
+}
+.bustype_Bus {
+background-color: #007c3f;
+color: #ffffff;
+}
+.bustype_sommerbus {
+background-color: #a7b1b7;
+color: #ffffff;
+}
+.bustype_natbus {
+background-color: #1a506d;
+color: #ffffff;
+}
+.bustype_tog {
+background-color: #003976;
+color: #ffffff;
+}
+.bustype_expresbus {
+background-color: #007ac2;
+color: #ffffff;
+}
+.bustype_telebus {
+background-color: #b2d235;
+color: #000;
+}
+.bustype_teletaxi {
+background-color: #b2d235;
+color: #ffffff;
+}
+
